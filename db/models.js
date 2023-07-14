@@ -53,7 +53,6 @@ const Question = sequelize.define('Question', {
   date_written: {
     type: DataTypes.DATE,
     allowNull: false,
-    // defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
   },
   asker_name: {
     type: DataTypes.STRING,
@@ -92,7 +91,6 @@ const Answer = sequelize.define('Answer', {
   date_written: {
     type: DataTypes.DATE,
     allowNull: false,
-    // defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
   },
   answerer_name: {
     type: DataTypes.STRING,
@@ -144,45 +142,38 @@ AnswerPhoto.belongsTo(Answer, { foreignKey: 'answer_id' });
 // IMPORT DATA
 const importData = [];
 
-const parseCSV = (stream, model, attributes) => {
+const parseCSV = (stream, model, attributes, batchSize = 100) => {
 
   return new Promise((resolve, reject) => {
-    const chunks = [];
-
-    let bit = [];
+    const rows = [];
+    let rowCount = 0;
 
     stream
-      .pipe(csv.parse()) // stream —> fast-csv —> JS objs
+      .pipe(csv.parse({ headers: true })) // skips header row
       .on('data', (data) => {
-        bit.push(data);
+        rows.push(
+          Object.fromEntries(attributes.map((attr) => [ attr, data[attr] ]))
+        );
+        rowCount++;
 
-        // if too big —> offload **
-        if (bit.length >= 50) {
-          chunks.push(bit);
-          bit = [];
+        if (rowCount >= batchSize) {
+          model.bulkCreate(rows)
+            .then(() => {
+              rows.length = 0;
+              rowCount = 0;
+            })
+            .catch((err) => reject(err));
         }
       })
       .on('end', () => {
-        // NOTE: process in chunks! **
+        if (rowCount > 0) {
+          model.bulkCreate(rows)
+            .then(() => resolve())
+            .catch((err) => reject(err));
 
-        if (bit.length > 0) {
-          chunks.push(bit);
+        } else {
+          resolve();
         }
-
-        const insertChunks = chunks.map((chunk) => {
-
-          const modelData = chunk.map((row) => {
-            return Object.fromEntries(
-              attributes.map((attr) => [ attr, row[attr] ])
-            );
-          });
-          return model.bulkCreate(modelData);
-        });
-
-        Promise.all(insertChunks)
-          .then(() => resolve())
-          .catch((err) => reject(err));
-
       })
       .on('error', (err) => reject(err));
   });
