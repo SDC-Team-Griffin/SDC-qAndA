@@ -5,7 +5,7 @@
   "main": "./server/index.js",
   "scripts": {
     "start": "nodemon ./server/index.js",
-    "setup-db": "nodemon --max-old-space-size=8192 ./db/models.js"
+    "setup-db": "NODE_OPTIONS=--max-old-space-size=8192 nodemon ./db/models.js"
   },
   "repository": {
     "type": "git",

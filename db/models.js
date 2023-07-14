@@ -53,7 +53,7 @@ const Question = sequelize.define('Question', {
   date_written: {
     type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    // defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
   },
   asker_name: {
     type: DataTypes.STRING,
@@ -92,7 +92,7 @@ const Answer = sequelize.define('Answer', {
   date_written: {
     type: DataTypes.DATE,
     allowNull: false,
-    defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
+    // defaultValue: sequelize.literal('CURRENT_TIMESTAMP')
   },
   answerer_name: {
     type: DataTypes.STRING,
