@@ -1,4 +1,3 @@
--- TABLES --
 CREATE TABLE IF NOT EXISTS questions (
   id SERIAL PRIMARY KEY,
   product_id INTEGER NOT NULL,
@@ -32,7 +31,6 @@ CREATE TABLE IF NOT EXISTS answers_photos (
   url VARCHAR NOT NULL
 );
 
--- FOREIGN KEYS --
 ALTER TABLE questions
 ADD FOREIGN KEY (product_id)
 REFERENCES products (id);
@@ -45,19 +43,22 @@ ALTER TABLE answers_photos
 ADD FOREIGN KEY (answer_id)
 REFERENCES answers (id);
 
--- IMPORT DATA --
-COPY questions (product_id, body, date_written, asker_name, asker_email, reported, helpful)
-FROM '../csv/questions.csv'
+COPY questions (id, product_id, body, date_written, asker_name, asker_email, reported, helpful)
+-- FROM '../csv/questions.csv'
+FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/questions.csv'
 DELIMITER ',' CSV HEADER;
 
-COPY answers (question_id, body, date_written, answerer_name, answerer_email, reported, helpful)
-FROM '../csv/answers.csv'
+COPY answers (id, question_id, body, date_written, answerer_name, answerer_email, reported, helpful)
+-- FROM '../csv/answers.csv'
+FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/answers.csv'
 DELIMITER ',' CSV HEADER;
 
-COPY products (name)
-FROM '../csv/product.csv'
+COPY products (id, name)
+-- FROM '../csv/product.csv'
+FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/product.csv'
 DELIMITER ',' CSV HEADER;
 
-COPY answers_photos (answer_id, url)
-FROM '../csv/answers_photos.csv'
+COPY answers_photos (id, answer_id, url)
+-- FROM '../csv/answers_photos.csv'
+FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/answers_photos.csv'
 DELIMITER ',' CSV HEADER;

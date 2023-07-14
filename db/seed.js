@@ -1,28 +1,23 @@
 require('dotenv').config();
-const { HOST, USER, PW, DB } = process.env;
-// console.log(`host: ${ HOST }, user: ${ USER }, pw: ${ PW }, db: ${ DB }`);
+const { USER, DB } = process.env;
+// console.log(`user: ${ USER }, db: ${ DB }`);
 
 const fs = require('fs');
+const path = require('path');
 const { Client } = require('pg');
 
-const connectionString = `postgres://${ USER }:${ PW }@localhost:5432/${ DB }`;
+const connectionString = `postgres://${ USER }@localhost:5432/${ DB }`;
 const client = new Client({ connectionString });
-
-/*
-const client = new Client({
-  host: HOST,
-  user: USER,
-  pw: PW,
-  port: 5432
-});
-*/
 
 client.connect()
   .then(() => {
     console.log(`Connected to PostgreSQL DB: ${ DB }`);
 
+    const filePath = path.join(__dirname, 'psqlSchema.sql');
+    // console.log(`filePath: ${ filePath }`);
+
     // read schema file
-    const fileSchema = fs.readFileSync('./psqlSchema.sql', 'utf-8');
+    const fileSchema = fs.readFileSync(filePath, 'utf-8');
 
     const sqlStatements = fileSchema
       // split file into statements
