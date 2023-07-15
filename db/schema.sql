@@ -1,9 +1,4 @@
-DROP TABLE IF EXISTS questions CASCADE;
-DROP TABLE IF EXISTS answers CASCADE;
-DROP TABLE IF EXISTS products CASCADE;
-DROP TABLE IF EXISTS answers_photos;
-
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
   name VARCHAR NOT NULL,
   slogan VARCHAR NOT NULL,
@@ -12,7 +7,7 @@ CREATE TABLE products (
   default_price INTEGER NOT NULL
 );
 
-CREATE TABLE questions (
+CREATE TABLE IF NOT EXISTS questions (
   id SERIAL PRIMARY KEY,
   product_id INTEGER NOT NULL,
   body TEXT NOT NULL,
@@ -23,7 +18,7 @@ CREATE TABLE questions (
   helpful INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE answers (
+CREATE TABLE IF NOT EXISTS answers (
   id SERIAL PRIMARY KEY,
   question_id INTEGER NOT NULL,
   body TEXT NOT NULL,
@@ -34,7 +29,7 @@ CREATE TABLE answers (
   helpful INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE TABLE answers_photos (
+CREATE TABLE IF NOT EXISTS answers_photos (
   id SERIAL PRIMARY KEY,
   answer_id INTEGER NOT NULL,
   url VARCHAR NOT NULL
