@@ -4,7 +4,7 @@ const { USER, DB } = process.env;
 const connectionString = `postgres://${ USER }@localhost:5432/${ DB }`;
 
 const { Sequelize, QueryTypes } = require('sequelize');
-const db = new Sequelize(connectionString);
+const sequelize = new Sequelize(connectionString);
 
 /*
 sequelize.authenticate()
@@ -16,4 +16,4 @@ sequelize.authenticate()
   });
 */
 
-module.exports = { db, QueryTypes };
+module.exports = { sequelize, QueryTypes };
