@@ -33,7 +33,35 @@ const Product = sequelize.define('Product', {
   name: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  slogan: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  description: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  category: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  default_price: {
+    type: DataTypes.INTEGER,
+    allowNull: false
+  },
+  /*
+  createdAt: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: () => Date.now()
+  },
+  updatedAt: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: () => Date.now()
   }
+  */
 });
 
 const Question = sequelize.define('Question', {
@@ -48,11 +76,13 @@ const Question = sequelize.define('Question', {
     allowNull: false
   },
   body: {
-    type: DataTypes.TEXT
+    type: DataTypes.TEXT,
+    allowNull: false
   },
   date_written: {
-    type: DataTypes.DATE,
+    type: DataTypes.BIGINT,
     allowNull: false,
+    defaultValue: () => Date.now()
   },
   asker_name: {
     type: DataTypes.STRING,
@@ -71,7 +101,19 @@ const Question = sequelize.define('Question', {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 0
+  },
+  /*
+  createdAt: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: () => Date.now()
+  },
+  updatedAt: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: () => Date.now()
   }
+  */
 });
 
 const Answer = sequelize.define('Answer', {
@@ -86,11 +128,13 @@ const Answer = sequelize.define('Answer', {
     allowNull: false
   },
   body: {
-    type: DataTypes.TEXT
+    type: DataTypes.TEXT,
+    allowNull: false
   },
   date_written: {
-    type: DataTypes.DATE,
+    type: DataTypes.BIGINT,
     allowNull: false,
+    defaultValue: () => Date.now()
   },
   answerer_name: {
     type: DataTypes.STRING,
@@ -109,7 +153,19 @@ const Answer = sequelize.define('Answer', {
     type: DataTypes.INTEGER,
     allowNull: false,
     defaultValue: 0
+  },
+  /*
+  createdAt: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: () => Date.now()
+  },
+  updatedAt: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: () => Date.now()
   }
+  */
 });
 
 const AnswerPhoto = sequelize.define('AnswerPhoto', {
@@ -126,7 +182,19 @@ const AnswerPhoto = sequelize.define('AnswerPhoto', {
   url: {
     type: DataTypes.STRING,
     allowNull: false
+  },
+  /*
+  createdAt: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: () => Date.now()
+  },
+  updatedAt: {
+    type: DataTypes.BIGINT,
+    allowNull: false,
+    defaultValue: () => Date.now()
   }
+  */
 });
 
 // ASSOCIATIONS
@@ -139,7 +207,61 @@ Answer.belongsTo(Question, { foreignKey: 'question_id' });
 Answer.hasMany(AnswerPhoto, { foreignKey: 'answer_id' });
 AnswerPhoto.belongsTo(Answer, { foreignKey: 'answer_id' });
 
-// IMPORT DATA
+// IMPORT DATA (IF NECESSARY)
+const importData = () => {
+  const strQuery = `
+    BEGIN;
+
+    COPY "Products"
+    FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/product.csv'
+    DELIMITER ',' CSV HEADER;
+
+    COPY "Questions"
+    FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/questions.csv'
+    DELIMITER ',' CSV HEADER;
+
+    COPY "Answers"
+    FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/answers.csv'
+    DELIMITER ',' CSV HEADER;
+
+    COPY "AnswerPhotos"
+    FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/answers_photos.csv'
+    DELIMITER ',' CSV HEADER;
+
+    COMMIT;
+  `;
+
+  return sequelize.query(strQuery)
+    .then(() => {
+      console.log('Data imported successfully!');
+    })
+    .catch((err) => {
+      console.error(`Error importing data: ${ err }`);
+    });
+};
+
+(async() => {
+
+  try {
+    const productCount = await Product.findOne();
+    const questionCount = await Question.findOne();
+    const answerCount = await Answer.findOne();
+    const photoCount = await AnswerPhoto.findOne();
+
+    if (productCount === null && questionCount === null && answerCount === null && photoCount === null) {
+      importData();
+    } else {
+      console.log('Tables already populated!');
+    }
+
+  } catch(err) {
+    console.error(`Error checking data population: ${ err }`);
+  }
+})();
+
+module.exports = { Product, Question, Answer, AnswerPhoto };
+
+/*
 const importData = [];
 
 const parseCSV = (stream, model, attributes, batchSize = 100) => {
@@ -230,3 +352,4 @@ const parseCSV = (stream, model, attributes, batchSize = 100) => {
     console.error(`Error importing data: ${ err }`);
   }
 })();
+*/
