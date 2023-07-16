@@ -27,20 +27,19 @@ module.exports = {
 
         // if no questions found
         if (questions.length === 0) {
-          return res.status(404).json({
-            error: `No questions for product_id: ${ product_id }`
-          });
+          console.error(`No questions for product_id: ${ product_id }`);
+
+          res.status(404).json({ error: 'No questions found!' });
         }
 
+        // else return questions
         console.log('Questions fetched successfully!');
         res.status(200).json(questions);
 
       } catch(err) {
         console.error(`Error fetching questions: ${ err }`);
 
-        res.status(500).json({
-          error: 'Error fetching questions'
-        });
+        res.status(500).json({ error: 'Error fetching questions' });
       }
     },
 
