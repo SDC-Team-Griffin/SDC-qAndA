@@ -73,7 +73,7 @@ module.exports = {
 
   answers: {
 
-    GET: (req, res) => {
+    GET: async(req, res) => {
       const { question_id } = req.params;
       const { page, count } = req.query;
 
@@ -81,22 +81,35 @@ module.exports = {
 
       const strQuery = `
         SELECT * FROM answers
-        WHERE question_id = ${ question_id }
+        WHERE question_id = $1
         ORDER BY id
-        LIMIT ${ count }
-        OFFSET ${ offset }
+        LIMIT $2
+        OFFSET $3
       `;
+      const params = [ question_id, count, offset ];
 
-      sequelize
-        .query(strQuery, { type: QueryTypes.SELECT })
-        .then((answers) => {
-          console.log('Answer(s) fetched!');
+      try {
+        const result = await db.query(strQuery, params);
 
-          res.json(answers);
-        })
-        .catch((err) => {
-          res.status(500).json({ error: `Error fetching answers: ${ err }` });
-        });
+        // returns array for each row by default
+        const answers = result.rows;
+
+        // if no answers found
+        if (answers.length === 0) {
+          console.error(`No answers for question_id: ${ question_id }`);
+
+          res.status(404).json({ error: 'No answers found!' });
+        }
+
+        // else return answers
+        console.log('Answers fetched successfully!');
+        res.status(200).json(answers);
+
+      } catch(err) {
+        console.error(`Error fetching questions: ${ err }`);
+
+        res.status(500).json({ error: 'Error fetching questions!' });
+      }
     },
 
     // "SequelizeUniqueConstraintError: Validation error" **
