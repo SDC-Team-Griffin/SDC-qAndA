@@ -1,3 +1,6 @@
+// (package.json):
+// "setup-db": "NODE_OPTIONS=--max-old-space-size=8192 nodemon ./db/models.js"
+
 require('dotenv').config();
 const { USER, DB } = process.env;
 const fs = require('fs');
