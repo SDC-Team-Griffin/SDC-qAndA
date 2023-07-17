@@ -21,12 +21,12 @@ describe('Questions API', () => {
       db.query = jest.fn().mockResolvedValue({
         rows: [
           {
-            "id": 142038,
-            "product_id": 40361,
-            "body": "Ex et voluptas quisquam dolores voluptate fuga earum nihil.",
+            "id": 420,
+            "product_id": 1,
+            "body": "ur mum lol",
             "date_written": "1595872277040",
-            "asker_name": "Elnora79",
-            "asker_email": "Ellsworth93@hotmail.com",
+            "asker_name": "spongebob69",
+            "asker_email": "sq4rep4nts@hotmail.com",
             "reported": 1,
             "helpful": 25
           },
