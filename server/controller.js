@@ -14,8 +14,7 @@ module.exports = {
         SELECT * FROM questions
         WHERE product_id = $1
         ORDER BY id
-        LIMIT $2
-        OFFSET $3
+        LIMIT $2 OFFSET $3
       `;
       const params = [ product_id, count, offset ];
 
