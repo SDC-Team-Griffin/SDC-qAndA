@@ -64,9 +64,22 @@ FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/a
 DELIMITER ',' CSV HEADER;
 
 -- SYNC TABLES ID'S
-SELECT setval(PG_GET_SERIAL_SEQUENCE('questions', 'id'), (SELECT MAX(id) FROM questions));
-SELECT setval(PG_GET_SERIAL_SEQUENCE('answers', 'id'), (SELECT MAX(id) FROM answers));
-SELECT setval(PG_GET_SERIAL_SEQUENCE('answers_photos', 'id'), (SELECT MAX(id) FROM answers_photos));
+-- SELECT PG_GET_SERIAL_SEQUENCE('answers', 'id');
+
+SELECT setval(
+  PG_GET_SERIAL_SEQUENCE('questions', 'id'),
+  (SELECT MAX(id) FROM questions)
+);
+
+SELECT setval(
+  PG_GET_SERIAL_SEQUENCE('answers', 'id'),
+  (SELECT MAX(id) FROM answers)
+);
+
+SELECT setval(
+  PG_GET_SERIAL_SEQUENCE('answers_photos', 'id'),
+  (SELECT MAX(id) FROM answers_photos)
+);
 
 -- CONFIRM NEW ENTRIES
 -- SELECT * FROM questions
