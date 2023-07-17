@@ -24,21 +24,78 @@ module.exports = {
         // returns array for each row by default
         const questions = result.rows;
 
+        /*
         // if no questions found
         if (questions.length === 0) {
-          console.error(`No questions for product_id: ${ product_id }`);
+          console.error(`No questions for product: ${ product_id }`);
 
-          res.status(404).json({ error: 'No questions found!' });
+          res.status(404).json({ error: 'No questions found' });
         }
+        */
 
         // else return questions
-        console.log('Questions fetched successfully!');
         res.status(200).json(questions);
 
       } catch(err) {
         console.error(`Error fetching questions: ${ err }`);
 
-        res.status(500).json({ error: 'Error fetching questions' });
+        res.status(500).json({
+          error: `Error fetching questions for product: ${ product_id }`
+        });
+      }
+    },
+
+    UPVOTE: async(req, res) => {
+      const { question_id } = req.params;
+
+      const strQuery = `
+        UPDATE questions
+        SET helpful = helpful + 1
+        WHERE id = $1
+      `;
+
+      try {
+        await db.query(strQuery, [ question_id ]);
+
+        // check if status code 204 sends res bodies
+        res.status(204).json({
+          success: true,
+          message: 'Helpfulness updated (+1)!'
+        });
+
+      } catch(err) {
+        console.error(`Error upvoting question: ${ err }`);
+
+        res.status(500).json({
+          error: `Error upvoting question: ${ question_id }`
+        });
+      }
+    },
+
+    REPORT: async(req, res) => {
+      const { question_id } = req.params;
+
+      const strQuery = `
+        UPDATE questions
+        SET reported = 1;
+        WHERE id = $1
+      `;
+
+      try {
+        await db.query(strQuery, [ question_id ]);
+
+        // check if status code 204 sends res bodies
+        res.status(204).json({
+          success: true,
+          message: 'Question reported!'
+        });
+
+      } catch(err) {
+        console.error(`Error reporting question: ${ err }`);
+
+        res.status(500).json({
+          error: `Error reporting question: ${ question_id }`
+        });
       }
     },
 
