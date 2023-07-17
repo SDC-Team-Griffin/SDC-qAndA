@@ -24,15 +24,6 @@ module.exports = {
         // returns array for each row by default
         const questions = result.rows;
 
-        /*
-        // if no questions found
-        if (questions.length === 0) {
-          console.error(`No questions for product: ${ product_id }`);
-
-          res.status(404).json({ error: 'No questions found' });
-        }
-        */
-
         // else return questions
         res.status(200).json(questions);
 
@@ -57,11 +48,7 @@ module.exports = {
       try {
         await db.query(strQuery, [ question_id ]);
 
-        // check if status code 204 sends res bodies
-        res.status(204).json({
-          success: true,
-          message: 'Helpfulness updated (+1)!'
-        });
+        res.status(204).end();
 
       } catch(err) {
         console.error(`Error upvoting question: ${ err }`);
@@ -77,18 +64,14 @@ module.exports = {
 
       const strQuery = `
         UPDATE questions
-        SET reported = 1;
+        SET reported = 1
         WHERE id = $1
       `;
 
       try {
         await db.query(strQuery, [ question_id ]);
 
-        // check if status code 204 sends res bodies
-        res.status(204).json({
-          success: true,
-          message: 'Question reported!'
-        });
+        res.status(204).end();
 
       } catch(err) {
         console.error(`Error reporting question: ${ err }`);
@@ -125,24 +108,6 @@ module.exports = {
 
         res.status(500).json({ error: 'Error posting question' });
       }
-
-      /*
-      db
-        .query(strQuery, {
-          type: QueryTypes.INSERT,
-          bind: [ product_id, body, name, email ],
-          raw: true // NOTE: no model for query
-        })
-        .then(() => {
-          res.status(201).json({
-            success: true,
-            message: 'Question posted!'
-          });
-        })
-        .catch((err) => {
-          res.status(500).json({ error: `Error posting question: ${ err }` });
-        });
-      */
     },
   },
 
@@ -158,8 +123,7 @@ module.exports = {
         SELECT * FROM answers
         WHERE question_id = $1
         ORDER BY id
-        LIMIT $2
-        OFFSET $3
+        LIMIT $2 OFFSET $3
       `;
       const params = [ question_id, count, offset ];
 
@@ -169,21 +133,61 @@ module.exports = {
         // returns array for each row by default
         const answers = result.rows;
 
-        // if no answers found
-        if (answers.length === 0) {
-          console.error(`No answers for question_id: ${ question_id }`);
-
-          res.status(404).json({ error: 'No answers found!' });
-        }
-
         // else return answers
-        console.log('Answers fetched successfully!');
         res.status(200).json(answers);
 
       } catch(err) {
         console.error(`Error fetching answers: ${ err }`);
 
-        res.status(500).json({ error: 'Error fetching answers!' });
+        res.status(500).json({
+          error: `Error fetching answers for question: ${ question_id }`
+        });
+      }
+    },
+
+    UPVOTE: async(req, res) => {
+      const { answer_id } = req.params;
+
+      const strQuery = `
+        UPDATE answers
+        SET helpful = helpful + 1
+        WHERE id = $1
+      `;
+
+      try {
+        await db.query(strQuery, [ answer_id ]);
+
+        res.status(204).end();
+
+      } catch(err) {
+        console.error(`Error upvoting answer: ${ err }`);
+
+        res.status(500).json({
+          error: `Error upvoting answer: ${ answer_id }`
+        });
+      }
+    },
+
+    REPORT: async(req, res) => {
+      const { answer_id } = req.params;
+
+      const strQuery = `
+        UPDATE answers
+        SET reported = 1
+        WHERE id = $1
+      `;
+
+      try {
+        await db.query(strQuery, [ answer_id ]);
+
+        res.status(204).end();
+
+      } catch(err) {
+        console.error(`Error reporting answer: ${ err }`);
+
+        res.status(500).json({
+          error: `Error reporting answer: ${ answer_id }`
+        });
       }
     },
 

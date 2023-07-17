@@ -21,11 +21,15 @@ app.use(express.json());
 
 // QUESTIONS
 app.get('/qa/questions', questions.GET);
-app.post('/qa/questions', questions.POST);
+app.put('/qa/questions/:question_id/helpful', questions.UPVOTE);
+app.put('/qa/questions/:question_id/report', questions.REPORT);
+app.post('/qa/questions', questions.POST); // BUGGED **
 
 // ANSWERS
 app.get('/qa/questions/:question_id/answers', answers.GET);
-app.post('/qa/questions/:question_id/answers', answers.POST);
+app.put('/qa/questions/:answer_id/helpful', answers.UPVOTE);
+app.put('/qa/questions/:answer_id/report', answers.REPORT);
+app.post('/qa/questions/:question_id/answers', answers.POST); // BUGGED **
 
 app.listen(PORT, () => {
   console.log(`Server listening to PORT: ${ PORT }`);
