@@ -2,7 +2,6 @@ require('dotenv').config();
 const { USER, HOST, DB, PW, DB_PORT } = process.env;
 const { Pool } = require('pg');
 
-// const connectionString = `postgres://${ USER }:${ PW }@${ HOST }:${ DB_PORT }/${ DB }`;
 const pool = new Pool({
   user: USER,
   host: HOST,
@@ -15,6 +14,7 @@ const pool = new Pool({
   try {
     await pool.connect();
     console.log(`Connected to DB: ${ DB }`);
+
   } catch(err) {
     console.error(`Error connecting to DB: ${ err }`);
   }

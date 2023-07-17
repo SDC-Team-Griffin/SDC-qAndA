@@ -16,15 +16,15 @@ module.exports = {
         ORDER BY id
         LIMIT $2 OFFSET $3
       `;
-      const params = [ product_id, count, offset ];
 
       try {
-        const result = await db.query(strQuery, params);
+        const result = await db.query(
+          strQuery, [ product_id, count, offset ]
+        );
 
-        // returns array for each row by default
+        // NOTE: must retrieve in separate steps due to async nature **
         const questions = result.rows;
 
-        // else return questions
         res.status(200).json(questions);
 
       } catch(err) {
@@ -46,7 +46,11 @@ module.exports = {
       `;
 
       try {
-        await db.query(strQuery, [ question_id ]);
+        await db.query(
+          strQuery, [ question_id ]
+        );
+
+        console.log('Helpfulness updated (+1)!');
 
         res.status(204).end();
 
@@ -69,7 +73,11 @@ module.exports = {
       `;
 
       try {
-        await db.query(strQuery, [ question_id ]);
+        await db.query(
+          strQuery, [ question_id ]
+        );
+
+        console.log('Question reported!');
 
         res.status(204).end();
 
@@ -82,20 +90,25 @@ module.exports = {
       }
     },
 
-    // "SequelizeUniqueConstraintError: Validation error" **
-    // "duplicate key value violates unique constraint 'questions_pkey'"
+    /* (errors):
+      > "SequelizeUniqueConstraintError: Validation error" **
+      > "duplicate key value violates unique constraint 'questions_pkey'"
+
+      > NOTE: needed to sync table ID sequences (in schema)! **
+    */
     POST: async(req, res) => {
       const { product_id, body, name, email } = req.body;
-      // console.log(`product_id: ${ product_id }, body: ${ body }, name: ${ name }, email: ${ email }`);
 
       const strQuery = `
         INSERT INTO questions (product_id, body, asker_name, asker_email)
         VALUES ($1, $2, $3, $4)
       `;
-      const params = [ product_id, body, name, email ];
 
       try {
-        await db.query(strQuery, params);
+        await db.query(
+          strQuery, [ product_id, body, name, email ]
+        );
+
         console.log(`${ name } posted question: ${ body }`);
 
         res.status(201).json({
@@ -106,7 +119,9 @@ module.exports = {
       } catch(err) {
         console.error(`Error posting question: ${ err }`);
 
-        res.status(500).json({ error: 'Error posting question' });
+        res.status(500).json({
+          error: `Error posting question: ${ body }`
+        });
       }
     },
   },
@@ -125,15 +140,14 @@ module.exports = {
         ORDER BY id
         LIMIT $2 OFFSET $3
       `;
-      const params = [ question_id, count, offset ];
 
       try {
-        const result = await db.query(strQuery, params);
+        const result = await db.query(
+          strQuery, [ question_id, count, offset ]
+        );
 
-        // returns array for each row by default
         const answers = result.rows;
 
-        // else return answers
         res.status(200).json(answers);
 
       } catch(err) {
@@ -155,7 +169,11 @@ module.exports = {
       `;
 
       try {
-        await db.query(strQuery, [ answer_id ]);
+        await db.query(
+          strQuery, [ answer_id ]
+        );
+
+        console.log('Helpfulness updated (+1)!');
 
         res.status(204).end();
 
@@ -178,7 +196,11 @@ module.exports = {
       `;
 
       try {
-        await db.query(strQuery, [ answer_id ]);
+        await db.query(
+          strQuery, [ answer_id ]
+        );
+
+        console.log('Answer reported!');
 
         res.status(204).end();
 
@@ -191,8 +213,7 @@ module.exports = {
       }
     },
 
-    // "SequelizeUniqueConstraintError: Validation error" **
-    // "duplicate key value violates unique constraint 'answers_pkey'"
+    // SYNC TABLE ID'S FIRST **
     POST: async(req, res) => {
       const { question_id } = req.params;
       const { body, name, email, photos } = req.body;
@@ -202,24 +223,33 @@ module.exports = {
         VALUES ($1, $2, $3, $4)
         RETURNING id;
       `;
-      const answerParams = [ question_id, body, name, email ];
 
       try {
-        const answerResult = await db.query(answerQuery, answerParams);
-        const answer_id = answerResult.rows[0].id;
+        const result = await db.query(
+          answerQuery, // NOTE: returns ID
+          [ question_id, body, name, email ]
+        );
 
+        const answerID = result.rows[0].id;
+
+        // check for photos
         if (photos.length > 0) {
           const photoQuery = `
             INSERT INTO answers_photos (answer_id, url)
             VALUES ${ photos.map((url) => '($1, $2)').join(',') }
           `;
 
-          const photoValues = photos.flatMap((url) => [ answer_id, url ]);
-          await db.query(photoQuery, photos);
+          const photoVals = photos.flatMap(
+            (url) => [ answerID, url ] // make array of
+          );
 
-          console.log(`${ name } posted answer: ${ body } + ${ photoValues.length } photo(s)!`);
+          await db.query(
+            photoQuery, photoVals
+          );
 
-          return res.status(201).json({
+          console.log(`${ name } posted answer + ${ photoVals.length } photo(s)!`);
+
+          res.status(201).json({
             success: true,
             message: `Answer + Photo(s) posted!`
           });
@@ -237,55 +267,55 @@ module.exports = {
 
         res.status(500).json({ error: 'Error posting answer!' });
       }
-
-      /*
-      const strQuery = `
-        INSERT INTO answers (question_id, body, answerer_name, answerer_email)
-        VALUES ($1, $2, $3, $4)
-        RETURNING id
-      `;
-
-      sequelize
-        .query(strQuery, {
-          type: QueryTypes.INSERT,
-          bind: [ question_id, body, name, email ],
-          raw: true
-        })
-        .then((result) => {
-          const answer_id = result[0].id;
-
-          if (photos.length > 0) {
-            const photos = photos.map((url) => [ answer_id, url ]);
-
-            const photoQuery = `
-              INSERT INTO answers_photos (answer_id, url)
-              VALUES ${ photos.map((photo) => `(${ answer_id }, '${ photo }')`).join(',') }
-            `;
-
-            (async() => {
-              try {
-                await sequelize.query(photoQuery);
-
-                res.status(201).json({
-                  success: true,
-                  message: 'Photo(s) posted!'
-                });
-              } catch(err) {
-                res.status(500).json({ error: `Error posting photo(s): ${ err }` });
-              }
-            })();
-
-          } else {
-            res.status(201).json({
-              success: true,
-              message: 'Answer posted!'
-            });
-          }
-        })
-        .catch((err) => {
-          res.status(500).json({ error: `Error posting answer: ${ err }` });
-        });
-      */
     }
   }
 };
+
+/*
+const strQuery = `
+  INSERT INTO answers (question_id, body, answerer_name, answerer_email)
+  VALUES ($1, $2, $3, $4)
+  RETURNING id
+`;
+
+sequelize
+  .query(strQuery, {
+    type: QueryTypes.INSERT,
+    bind: [ question_id, body, name, email ],
+    raw: true
+  })
+  .then((result) => {
+    const answer_id = result[0].id;
+
+    if (photos.length > 0) {
+      const photos = photos.map((url) => [ answer_id, url ]);
+
+      const photoQuery = `
+        INSERT INTO answers_photos (answer_id, url)
+        VALUES ${ photos.map((photo) => `(${ answer_id }, '${ photo }')`).join(',') }
+      `;
+
+      (async() => {
+        try {
+          await sequelize.query(photoQuery);
+
+          res.status(201).json({
+            success: true,
+            message: 'Photo(s) posted!'
+          });
+        } catch(err) {
+          res.status(500).json({ error: `Error posting photo(s): ${ err }` });
+        }
+      })();
+
+    } else {
+      res.status(201).json({
+        success: true,
+        message: 'Answer posted!'
+      });
+    }
+  })
+  .catch((err) => {
+    res.status(500).json({ error: `Error posting answer: ${ err }` });
+  });
+*/

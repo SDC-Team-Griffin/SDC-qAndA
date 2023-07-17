@@ -46,7 +46,6 @@ CREATE TABLE IF NOT EXISTS answers_photos (
   FOREIGN KEY (answer_id) REFERENCES answers (id)
 );
 
-/*
 -- IMPORT DATA
 COPY products
 FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/product.csv'
@@ -63,33 +62,15 @@ DELIMITER ',' CSV HEADER;
 COPY answers_photos
 FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/answers_photos.csv'
 DELIMITER ',' CSV HEADER;
-*/
 
--- SYNC TABLES VIA SEQUENCE GENERATORS
-CREATE SEQUENCE IF NOT EXISTS questions_id_seq;
-CREATE SEQUENCE IF NOT EXISTS answers_id_seq;
+-- SYNC TABLES ID'S
+SELECT setval(PG_GET_SERIAL_SEQUENCE('questions', 'id'), (SELECT MAX(id) FROM questions));
+SELECT setval(PG_GET_SERIAL_SEQUENCE('answers', 'id'), (SELECT MAX(id) FROM answers));
+SELECT setval(PG_GET_SERIAL_SEQUENCE('answers_photos', 'id'), (SELECT MAX(id) FROM answers_photos));
 
-ALTER TABLE questions
-ALTER COLUMN id
-SET DEFAULT nextval('questions_id_seq');
+-- CONFIRM NEW ENTRIES
+-- SELECT * FROM questions
+-- WHERE id = (SELECT MAX(id) FROM questions);
 
-ALTER TABLE answers
-ALTER COLUMN id
-SET DEFAULT nextval('answers_id_seq');
-
--- AFTER DATA IMPORT
-COPY products
-FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/product.csv'
-DELIMITER ',' CSV HEADER;
-
-COPY questions
-FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/questions.csv'
-DELIMITER ',' CSV HEADER;
-
-COPY answers
-FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/answers.csv'
-DELIMITER ',' CSV HEADER;
-
-COPY answers_photos
-FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/answers_photos.csv'
-DELIMITER ',' CSV HEADER;
+-- SELECT * FROM answers
+-- WHERE id = (SELECT MAX(id) FROM answers);
