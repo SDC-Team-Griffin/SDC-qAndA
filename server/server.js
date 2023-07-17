@@ -20,12 +20,9 @@ app.use(express.static(
 app.use(morgan('dev'));
 app.use(express.json());
 
-// mount routers
+// MOUNT ROUTERS
 app.use('/qa/questions', routerQ);
 app.use('/qa/questions', routerA);
-
-// app.get('/qa/questions/:question_id/answers', answers.GET);
-// app.post('/qa/questions/:question_id/answers', answers.POST);
 
 app.listen(PORT, () => {
   console.log(`Server listening to PORT: ${ PORT }`);
