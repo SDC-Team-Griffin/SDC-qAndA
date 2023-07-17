@@ -29,7 +29,7 @@ describe('Questions API', () => {
             "asker_email": "sq4rep4nts@hotmail.com",
             "reported": 1,
             "helpful": 25
-          },
+          }
         ]
       });
 
