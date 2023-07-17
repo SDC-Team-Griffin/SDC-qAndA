@@ -7,34 +7,70 @@ module.exports = {
 
     GET: async(req, res) => {
       const { product_id, page, count } = req.query;
+
+      // OFFSET = rows to skip
       const offset = (page - 1) * count;
 
       // parameterized query (w/ placeholders)
-      const strQuery = `
+      const questionsQuery = `
         SELECT * FROM questions
         WHERE product_id = $1
         ORDER BY id
-        LIMIT $2
-        OFFSET $3
+        LIMIT $2 OFFSET $3
       `;
-      const params = [ product_id, count, offset ];
+      const questionParams = [ product_id, count, offset ];
 
       try {
-        const result = await db.query(strQuery, params);
+        const questionsResult = await db.query(questionsQuery, questionParams);
+
+        const answersQuery = `
+          SELECT * FROM answers
+          WHERE question_id IN (SELECT id FROM questions WHERE product_id = $1)
+        `;
+
+        const answersResult = await db.query(answersQuery, [ product_id ]);
 
         // returns array for each row by default
-        const questions = result.rows;
+        const questions = questionsResult.rows.map((question) => {
+          const { id, body, date_written, asker_name, helpful, reported } = question;
+
+          const formatted = {
+            question_id: id,
+            question_body: body,
+            question_date: new Date(Number(date_written)).toISOString(),
+            asker_name: asker_name,
+            question_helpfulness: helpful,
+            reported: reported === 1,
+            answers: {}
+          };
+
+          // only corresponding questions
+          const answers = answersResult.rows.filter(
+            (answer) => answer.question_id === question_id
+          );
+
+          answers.forEach((answer) => {
+            const { id, body, date_written, answerer_name, answerer_email, helpful, photos } = answer;
+
+            formatted.answers[ id ] = {
+              id: id,
+              body: body,
+              date: new Date(Number(date_written)).toISOString(),
+              answerer_name: answerer_name,
+              answerer_email: answerer_email,
+
+            }
+          })
+        });
 
         // if no questions found
         if (questions.length === 0) {
-          console.error(`No questions for product_id: ${ product_id }`);
-
-          res.status(404).json({ error: 'No questions found!' });
+          res.status(404).json({ error: `No questions for product: ${ product_id }` });
         }
 
         // else return questions
         console.log('Questions fetched successfully!');
-        res.status(200).json(questions);
+        res.status(200).json({ data: questions });
 
       } catch(err) {
         console.error(`Error fetching questions: ${ err }`);
@@ -43,11 +79,51 @@ module.exports = {
       }
     },
 
+    UPVOTE: async(req, res) => {
+      const { question_id } = req.params;
+
+      const strQuery = `
+        UPDATE questions
+        SET helpful = helpful + 1
+        WHERE id = $1
+      `;
+
+      try {
+        await db.query(strQuery, [ question_id ]);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Helpfulness updated (+1)!'
+        });
+
+      } catch(err) {
+        res.status(500).json({ error: `Error upvoting question: ${ question_id }` });
+      }
+    },
+
+    REPORT: async(req, res) => {
+      const { question_id } = req.params;
+
+      const strQuery = `
+        UPDATE questions
+        SET reported = 1;
+        WHERE id = $1
+      `;
+
+      try {
+        await db.query(strQuery, [ question_id ]);
+
+        res.status(204).json({ success: true, message: 'Question reported!' });
+
+      } catch(err) {
+        res.status(500).json({ error: `Error reporting question: ${ question_id }` });
+      }
+    },
+
     // "SequelizeUniqueConstraintError: Validation error" **
     // "duplicate key value violates unique constraint 'questions_pkey'"
     POST: async(req, res) => {
       const { product_id, body, name, email } = req.body;
-      // console.log(`product_id: ${ product_id }, body: ${ body }, name: ${ name }, email: ${ email }`);
 
       const strQuery = `
         INSERT INTO questions (product_id, body, asker_name, asker_email)
@@ -69,25 +145,7 @@ module.exports = {
 
         res.status(500).json({ error: 'Error posting question' });
       }
-
-      /*
-      db
-        .query(strQuery, {
-          type: QueryTypes.INSERT,
-          bind: [ product_id, body, name, email ],
-          raw: true // NOTE: no model for query
-        })
-        .then(() => {
-          res.status(201).json({
-            success: true,
-            message: 'Question posted!'
-          });
-        })
-        .catch((err) => {
-          res.status(500).json({ error: `Error posting question: ${ err }` });
-        });
-      */
-    },
+    }
   },
 
   answers: {
@@ -131,8 +189,47 @@ module.exports = {
       }
     },
 
-    // "SequelizeUniqueConstraintError: Validation error" **
-    // "duplicate key value violates unique constraint 'answers_pkey'"
+    UPVOTE: async(req, res) => {
+      const { answer_id } = req.params;
+
+      const strQuery = `
+        UPDATE answers
+        SET helpful = helpful + 1
+        WHERE id = $1
+      `;
+
+      try {
+        await db.query(strQuery, [ answer_id ]);
+
+        return res.status(200).json({
+          success: true,
+          message: 'Helpfulness updated (+1)!'
+        });
+
+      } catch(err) {
+        res.status(500).json({ error: `Error upvoting answer: ${ answer_id }` });
+      }
+    },
+
+    REPORT: async(req, res) => {
+      const { answer_id } = req.params;
+
+      const strQuery = `
+        UPDATE answers
+        SET reported = 1;
+        WHERE id = $1
+      `;
+
+      try {
+        await db.query(strQuery, [ answer_id ]);
+
+        res.status(204).json({ success: true, message: 'Answer reported!' });
+
+      } catch(err) {
+        res.status(500).json({ error: `Error reporting question: ${ answer_id }` });
+      }
+    },
+
     POST: async(req, res) => {
       const { question_id } = req.params;
       const { body, name, email, photos } = req.body;
