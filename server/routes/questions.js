@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const { GET, POST, UPVOTE, REPORT } = require('../controller').questions;
+const { GET, POST, UPVOTE, REPORT } = require('../controllers/questions');
 
 router.get('/', GET);
 router.post('/', POST);

@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const { GET, POST, UPVOTE, REPORT } = require('../controller').answers;
+const { GET, POST, UPVOTE, REPORT } = require('../controllers/answers');
 
-// NOTE: must include params in route handler **
+// NOTE: must explicitly include params for route handler **
 router.get('/:question_id/answers', GET);
 router.post('/:question_id/answers', POST);
 

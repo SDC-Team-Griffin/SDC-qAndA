@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { USER, HOST, DB, PW, DB_PORT } = process.env;
+const { USER, HOST, DB, PW, DB_PORT, NODE_ENV } = process.env;
 const { Pool } = require('pg');
 
 const pool = new Pool({
@@ -12,27 +12,13 @@ const pool = new Pool({
 
 (async() => {
   try {
-    await pool.connect();
-    console.log(`Connected to DB: ${ DB }`);
-
+    if (NODE_ENV !== 'test') {
+      await pool.connect();
+      console.log(`Connected to DB: ${ DB }`);
+    }
   } catch(err) {
     console.error(`Error connecting to DB: ${ err }`);
   }
 })();
 
 module.exports = pool;
-
-/*
-const { Sequelize, QueryTypes } = require('sequelize');
-const sequelize = new Sequelize(connectionString);
-
-sequelize.authenticate()
-  .then(() => {
-    console.log('Connection authenticated!');
-  })
-  .catch((err) => {
-    console.error(`Error connecting to DB: ${ err }`);
-  });
-
-module.exports = { sequelize, QueryTypes };
-*/

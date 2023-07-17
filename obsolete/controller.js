@@ -8,24 +8,73 @@ module.exports = {
       const { product_id, page, count } = req.query;
       const offset = (page - 1) * count;
 
-      // parameterized query (w/ placeholders)
+      /* parameterized query (w/ placeholders)
       const strQuery = `
         SELECT * FROM questions
         WHERE product_id = $1
         ORDER BY id
         LIMIT $2 OFFSET $3
       `;
+      */
+
+      const queryQ = `
+        SELECT
+          q.id AS question_id,
+          q.body AS question_body,
+          q.date_written AS question_date,
+          q.asker_name,
+          q.helpful AS question_helpfulness,
+          q.reported
+        FROM
+          questions AS q
+        WHERE
+          q.product_id = $1
+        ORDER BY
+          q.id
+        LIMIT $2 OFFSET $3
+      `;
 
       try {
-        const result = await db.query(
-          strQuery, [ product_id, count, offset ]
+        const resultQ = await db.query(
+          queryQ, [ product_id, count, offset ]
         );
         // NOTE: must retrieve in separate steps (due to async nature) **
-        const questions = result.rows;
+        const questions = resultQ.rows;
 
         console.log(`${ questions.length } question(s) fetched!`);
 
-        res.status(200).json(questions);
+        questions.forEach(async(question) => {
+          const queryA = `
+            SELECT
+              a.id AS answer_id,
+              a.body,
+              a.date_written AS date,
+              a.answerer_name,
+              a.helpful AS helpfulness,
+              COALESCE(
+                json_agg(json_build_object('id', ap.id, 'url', ap.url)),
+                '[]'
+              ) AS photos
+            FROM
+              answers AS a
+            LEFT JOIN
+              answers_photos AS ap ON a.id = ap.answer_id
+            WHERE
+              a.question_id = $1
+            GROUP BY
+              a.id
+          `;
+
+          const resultA = await db.query(
+            queryA, [ question.question_id ]
+          );
+          question.answers = resultA.rows;
+        });
+
+        res.status(200).json({
+          product_id,
+          results: questions
+        });
 
       } catch(err) {
         console.error(`Error fetching questions: ${ err }`);
@@ -135,10 +184,34 @@ module.exports = {
 
       const offset = (page - 1) * count;
 
+      /*
       const strQuery = `
         SELECT * FROM answers
         WHERE question_id = $1
         ORDER BY id
+        LIMIT $2 OFFSET $3
+      `;
+      */
+
+      const strQuery = `
+        SELECT
+          a.id AS answer_id,
+          a.body,
+          a.date_written AS date,
+          a.answerer_name,
+          a.helpful AS helpfulness,
+          COALESCE(
+            json_agg(json_build_object('id', ap.id, 'url', ap.url)),
+            '[]'
+          ) AS photos
+        FROM
+          answers AS a
+        LEFT JOIN
+          answers_photos AS ap ON a.id = ap.answer_id
+        WHERE
+          a.question_id = $1
+        GROUP BY
+          a.id
         LIMIT $2 OFFSET $3
       `;
 
@@ -150,7 +223,12 @@ module.exports = {
 
         console.log(`${ answers.length } answer(s) fetched!`);
 
-        res.status(200).json(answers);
+        res.status(200).json({
+          question: question_id,
+          page: parseInt(page),
+          count: parseInt(count),
+          results: answers
+        });
 
       } catch(err) {
         console.error(`Error fetching answers: ${ err }`);

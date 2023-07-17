@@ -10,7 +10,9 @@ describe('Questions API', () => {
   describe('GET /qa/questions', () => {
 
     test('fetch questions', async() => {
-      const req = { query: { product_id: 1, page: 1, count: 10 } };
+      const req = { query:
+        { product_id: 1, page: 1, count: 10 }
+      };
 
       const res = {
         status: jest.fn().mockReturnThis(),
@@ -18,7 +20,7 @@ describe('Questions API', () => {
       };
 
       // MOCK POSITIVE RESULT
-      db.query = jest.fn().mockResolvedValue({
+      const mockRes = {
         rows: [
           {
             "id": 420,
@@ -31,20 +33,28 @@ describe('Questions API', () => {
             "helpful": 25
           }
         ]
-      });
+      };
+
+      db.query = jest.fn().mockResolvedValue(mockRes);
 
       await questions.GET(req, res);
 
       // VERIFY
+      expect(db.query).toHaveBeenCalledWith(
+        expect.any(String), [1, 10, 0]
+      );
+
       expect(res.status).toHaveBeenCalledWith(200);
 
       expect(res.json).toHaveBeenCalledWith(
-        expect.any(Array)
+        mockRes.rows
       );
     });
 
     test('handle errors when fetching questions', async() => {
-      const req = { query: { product_id: 1, page: 1, count: 10 } };
+      const req = { query:
+        { product_id: 1, page: 1, count: 10 }
+      };
 
       const res = {
         status: jest.fn().mockReturnThis(),
@@ -53,16 +63,70 @@ describe('Questions API', () => {
 
       // MOCK NEGATIVE RESULT
       db.query = jest.fn().mockRejectedValue(
-        new Error('Error fetching questions from DB!')
+        new Error('Error fetching questions from DB')
       );
 
       await questions.GET(req, res);
 
       // VERIFY
+      expect(db.query).toHaveBeenCalledWith(
+        expect.any(String), [ 1, 10, 0 ]
+      );
+
       expect(res.status).toHaveBeenCalledWith(500);
 
       expect(res.json).toHaveBeenCalledWith({
         error: 'Error fetching questions for product: 1'
+      });
+    });
+  });
+
+  describe('PUT /qa/questions/:question_id/helpful', () => {
+
+    test('update question helpfulness', async() => {
+      const req = { params: { question_id: 123 } };
+
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        end: jest.fn()
+      };
+
+      db.query = jest.fn().mockResolvedValue();
+
+      await questions.UPVOTE(req, res);
+
+      // VERIFY
+      expect(db.query).toHaveBeenCalledWith(
+        expect.any(String), [ req.params.question_id ]
+      );
+
+      expect(res.status).toHaveBeenCalledWith(204);
+
+      expect(res.end).toHaveBeenCalledWith();
+    });
+
+    test('handle errors when updating helpfulness', async() => {
+      const req = { params: { question_id: 123 } };
+
+      const res = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn()
+      };
+
+      db.query = jest.fn().mockRejectedValue(
+        new Error('Error updating questions in DB')
+      );
+
+      await questions.UPVOTE(req, res);
+
+      expect(db.query).toHaveBeenCalledWith(
+        expect.any(String), [ req.params.question_id ]
+      );
+
+      expect(res.status).toHaveBeenCalledWith(500);
+
+      expect(res.json).toHaveBeenCalledWith({
+        error: `Error upvoting question: ${ req.params.question_id }`
       });
     });
   });
