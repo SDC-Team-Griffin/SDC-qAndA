@@ -1,5 +1,4 @@
 const db = require('../db');
-// const { sequelize, QueryTypes } = require('../db/db.js');
 
 module.exports = {
 
@@ -21,9 +20,10 @@ module.exports = {
         const result = await db.query(
           strQuery, [ product_id, count, offset ]
         );
-
-        // NOTE: must retrieve in separate steps due to async nature **
+        // NOTE: must retrieve in separate steps (due to async nature) **
         const questions = result.rows;
+
+        console.log(`${ questions.length } question(s) fetched!`);
 
         res.status(200).json(questions);
 
@@ -145,8 +145,9 @@ module.exports = {
         const result = await db.query(
           strQuery, [ question_id, count, offset ]
         );
-
         const answers = result.rows;
+
+        console.log(`${ answers.length } answer(s) fetched!`);
 
         res.status(200).json(answers);
 
@@ -240,7 +241,7 @@ module.exports = {
           `;
 
           const photoVals = photos.flatMap(
-            (url) => [ answerID, url ] // make array of
+            (url) => [ answerID, url ]
           );
 
           await db.query(
@@ -270,52 +271,3 @@ module.exports = {
     }
   }
 };
-
-/*
-const strQuery = `
-  INSERT INTO answers (question_id, body, answerer_name, answerer_email)
-  VALUES ($1, $2, $3, $4)
-  RETURNING id
-`;
-
-sequelize
-  .query(strQuery, {
-    type: QueryTypes.INSERT,
-    bind: [ question_id, body, name, email ],
-    raw: true
-  })
-  .then((result) => {
-    const answer_id = result[0].id;
-
-    if (photos.length > 0) {
-      const photos = photos.map((url) => [ answer_id, url ]);
-
-      const photoQuery = `
-        INSERT INTO answers_photos (answer_id, url)
-        VALUES ${ photos.map((photo) => `(${ answer_id }, '${ photo }')`).join(',') }
-      `;
-
-      (async() => {
-        try {
-          await sequelize.query(photoQuery);
-
-          res.status(201).json({
-            success: true,
-            message: 'Photo(s) posted!'
-          });
-        } catch(err) {
-          res.status(500).json({ error: `Error posting photo(s): ${ err }` });
-        }
-      })();
-
-    } else {
-      res.status(201).json({
-        success: true,
-        message: 'Answer posted!'
-      });
-    }
-  })
-  .catch((err) => {
-    res.status(500).json({ error: `Error posting answer: ${ err }` });
-  });
-*/

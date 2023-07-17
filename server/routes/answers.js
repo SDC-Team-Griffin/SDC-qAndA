@@ -1,7 +1,13 @@
 const express = require('express');
 const router = express.Router();
 
-router.use(express.json());
+const { GET, POST, UPVOTE, REPORT } = require('../controller').answers;
 
+// NOTE: must include params in route handler **
+router.get('/:question_id/answers', GET);
+router.post('/:question_id/answers', POST);
 
-export default router;
+router.put('/:answer_id/helpful', UPVOTE);
+router.put('/:answer_id/report', REPORT);
+
+module.exports = router;

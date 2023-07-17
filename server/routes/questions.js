@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-router.use(express.json());
+const { GET, POST, UPVOTE, REPORT } = require('../controller').questions;
 
+router.get('/', GET);
+router.post('/', POST);
+router.put('/:question_id/helpful', UPVOTE);
+router.put('/:question_id/report', REPORT);
 
-export default router;
+module.exports = router;
