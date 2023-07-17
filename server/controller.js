@@ -44,16 +44,34 @@ module.exports = {
     },
 
     // "SequelizeUniqueConstraintError: Validation error" **
-    POST: (req, res) => {
+    // "duplicate key value violates unique constraint 'questions_pkey'"
+    POST: async(req, res) => {
       const { product_id, body, name, email } = req.body;
-      console.log(`product_id: ${ product_id }, body: ${ body }, name: ${ name }, email: ${ email }`);
+      // console.log(`product_id: ${ product_id }, body: ${ body }, name: ${ name }, email: ${ email }`);
 
       const strQuery = `
         INSERT INTO questions (product_id, body, asker_name, asker_email)
         VALUES ($1, $2, $3, $4)
       `;
+      const params = [ product_id, body, name, email ];
 
-      sequelize
+      try {
+        await db.query(strQuery, params);
+        console.log(`${ name } posted question: ${ body }`);
+
+        res.status(201).json({
+          success: true,
+          message: 'Question posted!'
+        });
+
+      } catch(err) {
+        console.error(`Error posting question: ${ err }`);
+
+        res.status(500).json({ error: 'Error posting question' });
+      }
+
+      /*
+      db
         .query(strQuery, {
           type: QueryTypes.INSERT,
           bind: [ product_id, body, name, email ],
@@ -68,6 +86,7 @@ module.exports = {
         .catch((err) => {
           res.status(500).json({ error: `Error posting question: ${ err }` });
         });
+      */
     },
   },
 
@@ -106,17 +125,60 @@ module.exports = {
         res.status(200).json(answers);
 
       } catch(err) {
-        console.error(`Error fetching questions: ${ err }`);
+        console.error(`Error fetching answers: ${ err }`);
 
-        res.status(500).json({ error: 'Error fetching questions!' });
+        res.status(500).json({ error: 'Error fetching answers!' });
       }
     },
 
     // "SequelizeUniqueConstraintError: Validation error" **
-    POST: (req, res) => {
+    // "duplicate key value violates unique constraint 'answers_pkey'"
+    POST: async(req, res) => {
       const { question_id } = req.params;
       const { body, name, email, photos } = req.body;
 
+      const answerQuery = `
+        INSERT INTO answers (question_id, body, answerer_name, answerer_email)
+        VALUES ($1, $2, $3, $4)
+        RETURNING id;
+      `;
+      const answerParams = [ question_id, body, name, email ];
+
+      try {
+        const answerResult = await db.query(answerQuery, answerParams);
+        const answer_id = answerResult.rows[0].id;
+
+        if (photos.length > 0) {
+          const photoQuery = `
+            INSERT INTO answers_photos (answer_id, url)
+            VALUES ${ photos.map((url) => '($1, $2)').join(',') }
+          `;
+
+          const photoValues = photos.flatMap((url) => [ answer_id, url ]);
+          await db.query(photoQuery, photos);
+
+          console.log(`${ name } posted answer: ${ body } + ${ photoValues.length } photo(s)!`);
+
+          return res.status(201).json({
+            success: true,
+            message: `Answer + Photo(s) posted!`
+          });
+        }
+
+        console.log(`${ name } posted answer: ${ body }`);
+
+        res.status(201).json({
+          success: true,
+          message: 'Answer posted!'
+        });
+
+      } catch(err) {
+        console.error(`Error posting answer: ${ err }`);
+
+        res.status(500).json({ error: 'Error posting answer!' });
+      }
+
+      /*
       const strQuery = `
         INSERT INTO answers (question_id, body, answerer_name, answerer_email)
         VALUES ($1, $2, $3, $4)
@@ -163,6 +225,7 @@ module.exports = {
         .catch((err) => {
           res.status(500).json({ error: `Error posting answer: ${ err }` });
         });
+      */
     }
   }
 };
