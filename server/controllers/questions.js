@@ -41,6 +41,11 @@ module.exports = {
       console.log(`${ questions.length } question(s) fetched!`);
 
       /*
+        LEFT JOIN:
+          > ALL rows from LEFT table included in data set
+          > joins w/ column names (in condition) from RIGHT table
+          > sets val of every column from RIGHT table to NULL if unmatched
+
         json_agg:
           > aggregates multiple rows of data into single JSON array
 
@@ -53,33 +58,35 @@ module.exports = {
 
           > takes multiple args —> returns 1st non-null
       */
-      questions.forEach(async(question) => {
-        const queryA = `
-          SELECT
-            a.id AS answer_id,
-            a.body,
-            a.date_written AS date,
-            a.answerer_name,
-            a.helpful AS helpfulness,
-            COALESCE(
-              json_agg(json_build_object('id', ap.id, 'url', ap.url)),
-              '[]'
-            ) AS photos
-          FROM
-            answers AS a
-          LEFT JOIN
-            answers_photos AS ap ON a.id = ap.answer_id
-          WHERE
-            a.question_id = $1
-          GROUP BY
-            a.id
-        `;
+      await Promise.all(
+        questions.map(async(question) => {
+          const queryA = `
+            SELECT
+              a.id AS answer_id,
+              a.body,
+              a.date_written AS date,
+              a.answerer_name,
+              a.helpful AS helpfulness,
+              COALESCE(
+                json_agg(json_build_object('id', ap.id, 'url', ap.url)),
+                '[]'
+              ) AS photos
+            FROM
+              answers AS a
+            LEFT JOIN
+              answers_photos AS ap ON a.id = ap.answer_id
+            WHERE
+              a.question_id = $1
+            GROUP BY
+              a.id
+          `;
 
         const resultA = await db.query(
           queryA, [ question.question_id ]
         );
         question.answers = resultA.rows;
-      });
+      })
+    );
 
       res.status(200).json({
         product_id,

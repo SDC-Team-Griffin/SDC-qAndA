@@ -17,6 +17,11 @@ module.exports = {
     */
 
     /*
+      LEFT JOIN:
+        > ALL rows from LEFT table included in data set
+        > joins w/ column names (in condition) from RIGHT table
+        > sets val of every column from RIGHT table to NULL if unmatched
+
       json_agg:
         > aggregates multiple rows of data into single JSON array
 

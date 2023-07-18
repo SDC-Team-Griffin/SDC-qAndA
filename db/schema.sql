@@ -1,7 +1,7 @@
 -- DROP TABLE IF EXISTS products CASCADE;
 -- DROP TABLE IF EXISTS questions CASCADE;
 -- DROP TABLE IF EXISTS answers CASCADE;
--- DROP TABLE IF EXISTS answers_photos;
+-- DROP TABLE IF EXISTS answers_photos CASCADE;
 
 CREATE TABLE IF NOT EXISTS products (
   id SERIAL PRIMARY KEY,
@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS answers_photos (
   FOREIGN KEY (answer_id) REFERENCES answers (id)
 );
 
+/*
 -- IMPORT DATA
 COPY products
 FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/product.csv'
@@ -62,20 +63,17 @@ DELIMITER ',' CSV HEADER;
 COPY answers_photos
 FROM '/Users/boss/Documents/HACK REACTOR/SYSTEMS DESIGN CAPSTONE/SDC-qAndA/csv/answers_photos.csv'
 DELIMITER ',' CSV HEADER;
+*/
 
 -- SYNC TABLES ID'S
--- SELECT PG_GET_SERIAL_SEQUENCE('answers', 'id');
-
 SELECT setval(
   PG_GET_SERIAL_SEQUENCE('questions', 'id'),
   (SELECT MAX(id) FROM questions)
 );
-
 SELECT setval(
   PG_GET_SERIAL_SEQUENCE('answers', 'id'),
   (SELECT MAX(id) FROM answers)
 );
-
 SELECT setval(
   PG_GET_SERIAL_SEQUENCE('answers_photos', 'id'),
   (SELECT MAX(id) FROM answers_photos)
@@ -87,3 +85,35 @@ SELECT setval(
 
 -- SELECT * FROM answers
 -- WHERE id = (SELECT MAX(id) FROM answers);
+
+-- NO INDEX (COMPARE QUERY PERFORMANCE)
+-- DROP INDEX IF EXISTS idx_products_id;
+-- DROP INDEX IF EXISTS idx_questions_id;
+-- DROP INDEX IF EXISTS idx_answers_id;
+-- DROP INDEX IF EXISTS idx_answers_photos_id;
+
+-- INDEX PRIMARY ID COLUMNS
+CREATE INDEX idx_products_id ON products (id);
+CREATE INDEX idx_questions_id ON questions (id);
+CREATE INDEX idx_answers_id ON answers (id);
+CREATE INDEX idx_answers_photos_id ON answers_photos (id);
+
+-- INDEX FOREIGN ID COLUMNS
+CREATE INDEX idx_q_products_id ON questions (product_id);
+CREATE INDEX idx_a_questions_id ON answers (question_id);
+CREATE INDEX idx_ap_answers_id ON answers_photos (answer_id);
+
+-- QUERY TOP, MID, BOTTOM 10% OF DATA
+SELECT * FROM questions
+ORDER BY id
+LIMIT (SELECT COUNT(*) * 0.1 FROM questions);
+
+SELECT * FROM questions
+ORDER BY id
+OFFSET (SELECT COUNT(*) * 0.45 FROM questions)
+LIMIT (SELECT COUNT(*) * 0.1 FROM questions);
+
+SELECT * FROM questions
+ORDER BY id DESC
+LIMIT (SELECT COUNT(*) * 0.1 FROM questions);
+
