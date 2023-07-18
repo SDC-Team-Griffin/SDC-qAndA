@@ -15,7 +15,7 @@ app.use(express.json());
 
 // serve loader.io verification file —> stress testing
 app.use(
-  express.static(path.join(__dirname, 'public'))
+  express.static(path.join(__dirname, '../public'))
 );
 
 /*
