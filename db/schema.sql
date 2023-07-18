@@ -92,6 +92,10 @@ SELECT setval(
 -- DROP INDEX IF EXISTS idx_answers_id;
 -- DROP INDEX IF EXISTS idx_answers_photos_id;
 
+-- DROP INDEX IF EXISTS idx_q_products_id ON questions (product_id);
+-- DROP INDEX IF EXISTS idx_a_questions_id ON answers (question_id);
+-- DROP INDEX IF EXISTS idx_ap_answers_id ON answers_photos (answer_id);
+
 -- INDEX PRIMARY ID COLUMNS
 CREATE INDEX idx_products_id ON products (id);
 CREATE INDEX idx_questions_id ON questions (id);
@@ -116,4 +120,3 @@ LIMIT (SELECT COUNT(*) * 0.1 FROM questions);
 SELECT * FROM questions
 ORDER BY id DESC
 LIMIT (SELECT COUNT(*) * 0.1 FROM questions);
-

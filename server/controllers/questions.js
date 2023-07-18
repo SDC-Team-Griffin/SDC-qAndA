@@ -68,7 +68,7 @@ module.exports = {
               a.answerer_name,
               a.helpful AS helpfulness,
               COALESCE(
-                json_agg(json_build_object('id', ap.id, 'url', ap.url)),
+                jsonb_agg(jsonb_build_object('id', ap.id, 'url', ap.url)),
                 '[]'
               ) AS photos
             FROM
