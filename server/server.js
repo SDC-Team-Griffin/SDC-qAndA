@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { PORT } = process.env;
+const { PORT, TEST } = process.env;
 const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
@@ -14,9 +14,11 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 // serve loader.io verification file —> stress testing
-app.use(
-  express.static(path.join(__dirname, '../public'))
-);
+if (TEST === 'stress') {
+  app.use(
+    express.static(path.join(__dirname, '../public'))
+  );
+}
 
 /*
 app.use(express.static(

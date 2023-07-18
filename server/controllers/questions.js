@@ -95,6 +95,41 @@ module.exports = {
     }
   },
 
+  /* (errors):
+    > "SequelizeUniqueConstraintError: Validation error" **
+    > "duplicate key value violates unique constraint 'questions_pkey'"
+
+    > NOTE: needed to sync table ID sequences (in schema)! **
+  */
+  POST: async(req, res) => {
+    const { product_id, body, name, email } = req.body;
+
+    const strQuery = `
+      INSERT INTO questions (product_id, body, asker_name, asker_email)
+      VALUES ($1, $2, $3, $4)
+    `;
+
+    try {
+      await db.query(
+        strQuery, [ product_id, body, name, email ]
+      );
+
+      console.log(`${ name } posted question: ${ body }`);
+
+      res.status(201).json({
+        success: true,
+        message: 'Question posted!'
+      });
+
+    } catch(err) {
+      console.error(`Error posting question: ${ err }`);
+
+      res.status(500).json({
+        error: `Error posting question: ${ body }`
+      });
+    }
+  },
+
   UPVOTE: async(req, res) => {
     const { question_id } = req.params;
 
@@ -147,40 +182,5 @@ module.exports = {
         error: `Error reporting question: ${ question_id }`
       });
     }
-  },
-
-  /* (errors):
-    > "SequelizeUniqueConstraintError: Validation error" **
-    > "duplicate key value violates unique constraint 'questions_pkey'"
-
-    > NOTE: needed to sync table ID sequences (in schema)! **
-  */
-  POST: async(req, res) => {
-    const { product_id, body, name, email } = req.body;
-
-    const strQuery = `
-      INSERT INTO questions (product_id, body, asker_name, asker_email)
-      VALUES ($1, $2, $3, $4)
-    `;
-
-    try {
-      await db.query(
-        strQuery, [ product_id, body, name, email ]
-      );
-
-      console.log(`${ name } posted question: ${ body }`);
-
-      res.status(201).json({
-        success: true,
-        message: 'Question posted!'
-      });
-
-    } catch(err) {
-      console.error(`Error posting question: ${ err }`);
-
-      res.status(500).json({
-        error: `Error posting question: ${ body }`
-      });
-    }
-  },
+  }
 };

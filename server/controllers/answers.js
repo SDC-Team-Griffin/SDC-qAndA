@@ -75,60 +75,6 @@ module.exports = {
     }
   },
 
-  UPVOTE: async(req, res) => {
-    const { answer_id } = req.params;
-
-    const strQuery = `
-      UPDATE answers
-      SET helpful = helpful + 1
-      WHERE id = $1
-    `;
-
-    try {
-      await db.query(
-        strQuery, [ answer_id ]
-      );
-
-      console.log('Helpfulness updated (+1)!');
-
-      res.status(204).end();
-
-    } catch(err) {
-      console.error(`Error upvoting answer: ${ err }`);
-
-      res.status(500).json({
-        error: `Error upvoting answer: ${ answer_id }`
-      });
-    }
-  },
-
-  REPORT: async(req, res) => {
-    const { answer_id } = req.params;
-
-    const strQuery = `
-      UPDATE answers
-      SET reported = 1
-      WHERE id = $1
-    `;
-
-    try {
-      await db.query(
-        strQuery, [ answer_id ]
-      );
-
-      console.log('Answer reported!');
-
-      res.status(204).end();
-
-    } catch(err) {
-      console.error(`Error reporting answer: ${ err }`);
-
-      res.status(500).json({
-        error: `Error reporting answer: ${ answer_id }`
-      });
-    }
-  },
-
   /* (errors):
     > "SequelizeUniqueConstraintError: Validation error"
     > "duplicate key value violates unique constraint 'answers_pkey'"
@@ -187,6 +133,60 @@ module.exports = {
       console.error(`Error posting answer: ${ err }`);
 
       res.status(500).json({ error: 'Error posting answer!' });
+    }
+  },
+
+  UPVOTE: async(req, res) => {
+    const { answer_id } = req.params;
+
+    const strQuery = `
+      UPDATE answers
+      SET helpful = helpful + 1
+      WHERE id = $1
+    `;
+
+    try {
+      await db.query(
+        strQuery, [ answer_id ]
+      );
+
+      console.log('Helpfulness updated (+1)!');
+
+      res.status(204).end();
+
+    } catch(err) {
+      console.error(`Error upvoting answer: ${ err }`);
+
+      res.status(500).json({
+        error: `Error upvoting answer: ${ answer_id }`
+      });
+    }
+  },
+
+  REPORT: async(req, res) => {
+    const { answer_id } = req.params;
+
+    const strQuery = `
+      UPDATE answers
+      SET reported = 1
+      WHERE id = $1
+    `;
+
+    try {
+      await db.query(
+        strQuery, [ answer_id ]
+      );
+
+      console.log('Answer reported!');
+
+      res.status(204).end();
+
+    } catch(err) {
+      console.error(`Error reporting answer: ${ err }`);
+
+      res.status(500).json({
+        error: `Error reporting answer: ${ answer_id }`
+      });
     }
   }
 };
