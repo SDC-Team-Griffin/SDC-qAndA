@@ -2,6 +2,7 @@ require('dotenv').config();
 const { PORT } = process.env;
 const express = require('express');
 const morgan = require('morgan');
+const path = require('path');
 
 // ROUTES
 const routerQ = require('./routes/questions');
@@ -9,16 +10,19 @@ const routerA = require('./routes/answers');
 
 const app = express();
 
-/*
-// const path = require('path');
+app.use(morgan('dev'));
+app.use(express.json());
 
+// serve loader.io verification file —> stress testing
+app.use(
+  express.static(path.join(__dirname, 'public'))
+);
+
+/*
 app.use(express.static(
   path.join(__dirname, '../../frontendcapstone/dist'))
 );
 */
-
-app.use(morgan('dev'));
-app.use(express.json());
 
 // MOUNT ROUTERS
 app.use('/qa/questions', routerQ);
