@@ -33,3 +33,5 @@ app.use('/qa/questions', routerA);
 app.listen(PORT, () => {
   console.log(`Server listening to PORT: ${ PORT }`);
 });
+
+module.exports = app;

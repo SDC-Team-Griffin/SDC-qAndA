@@ -31,33 +31,31 @@ module.exports = {
 
       console.log(`${ questions.length } question(s) fetched!`);
 
-      await Promise.all(
-        questions.map(async(question) => {
-          const queryA = `
-            SELECT
-              a.id AS answer_id,
-              a.body,
-              a.date_written AS date,
-              a.answerer_name,
-              a.helpful AS helpfulness,
-              COALESCE(
-                jsonb_agg(jsonb_build_object('id', ap.id, 'url', ap.url)),
-                '[]'
-              ) AS photos
-            FROM
-              answers AS a
-            LEFT JOIN
-              answers_photos AS ap ON a.id = ap.answer_id
-            WHERE
-              a.question_id = $1
-            GROUP BY
-              a.id
-          `;
+      for (const question of questions) {
+        const queryA = `
+          SELECT
+            a.id AS answer_id,
+            a.body,
+            a.date_written AS date,
+            a.answerer_name,
+            a.helpful AS helpfulness,
+            COALESCE(
+              jsonb_agg(jsonb_build_object('id', ap.id, 'url', ap.url)),
+              '[]'
+            ) AS photos
+          FROM
+            answers AS a
+          LEFT JOIN
+            answers_photos AS ap ON a.id = ap.answer_id
+          WHERE
+            a.question_id = $1
+          GROUP BY
+            a.id
+        `;
 
-          const resultA = await db.query(queryA, [ question.question_id ]);
-          question.answers = resultA.rows;
-        })
-      );
+        const resultA = await db.query(queryA, [ question.question_id ]);
+        question.answers = resultA.rows;
+      }
 
       res.status(200).json({
         product_id,
@@ -65,8 +63,6 @@ module.exports = {
       });
 
     } catch(err) {
-      // console.error(`Error fetching questions: ${ err }`);
-
       res.status(500).json({
         error: `Error fetching questions for product: ${ product_id }`
       });
@@ -100,8 +96,6 @@ module.exports = {
       });
 
     } catch(err) {
-      // console.error(`Error posting question: ${ err }`);
-
       res.status(500).json({
         error: `Error posting question: ${ body }`
       });
@@ -127,8 +121,6 @@ module.exports = {
       res.status(204).end();
 
     } catch(err) {
-      // console.error(`Error upvoting question: ${ err }`);
-
       res.status(500).json({
         error: `Error upvoting question: ${ question_id }`
       });
@@ -154,8 +146,6 @@ module.exports = {
       res.status(204).end();
 
     } catch(err) {
-      // console.error(`Error reporting question: ${ err }`);
-
       res.status(500).json({
         error: `Error reporting question: ${ question_id }`
       });
