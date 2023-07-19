@@ -5,15 +5,6 @@ module.exports = {
     const { product_id, page, count } = req.query;
     const offset = (page - 1) * count;
 
-    /* parameterized query (w/ placeholders)
-    const strQuery = `
-      SELECT * FROM questions
-      WHERE product_id = $1
-      ORDER BY id
-      LIMIT $2 OFFSET $3
-    `;
-    */
-
     const queryQ = `
       SELECT
         q.id AS question_id,
@@ -21,7 +12,10 @@ module.exports = {
         q.date_written AS question_date,
         q.asker_name,
         q.helpful AS question_helpfulness,
-        q.reported
+        CASE
+          WHEN q.reported = 1 THEN true
+          ELSE false
+        END AS reported
       FROM
         questions AS q
       WHERE
@@ -32,32 +26,11 @@ module.exports = {
     `;
 
     try {
-      const resultQ = await db.query(
-        queryQ, [ product_id, count, offset ]
-      );
-      // NOTE: must retrieve in separate steps (due to async nature) **
+      const resultQ = await db.query(queryQ, [ product_id, count, offset ]);
       const questions = resultQ.rows;
 
       console.log(`${ questions.length } question(s) fetched!`);
 
-      /*
-        LEFT JOIN:
-          > ALL rows from LEFT table included in data set
-          > joins w/ column names (in condition) from RIGHT table
-          > sets val of every column from RIGHT table to NULL if unmatched
-
-        json_agg:
-          > aggregates multiple rows of data into single JSON array
-
-        json_build_object:
-          > constructs JSON obj using key-val pairs
-
-        COALESCE:
-          > designates default val when result === null
-          (e.g. when answer has no photos —> empty array)
-
-          > takes multiple args —> returns 1st non-null
-      */
       await Promise.all(
         questions.map(async(question) => {
           const queryA = `
@@ -81,20 +54,18 @@ module.exports = {
               a.id
           `;
 
-        const resultA = await db.query(
-          queryA, [ question.question_id ]
-        );
-        question.answers = resultA.rows;
-      })
-    );
+          const resultA = await db.query(queryA, [ question.question_id ]);
+          question.answers = resultA.rows;
+        })
+      );
 
       res.status(200).json({
         product_id,
-        results: questions
+        results: questions,
       });
 
     } catch(err) {
-      console.error(`Error fetching questions: ${ err }`);
+      // console.error(`Error fetching questions: ${ err }`);
 
       res.status(500).json({
         error: `Error fetching questions for product: ${ product_id }`
@@ -129,7 +100,7 @@ module.exports = {
       });
 
     } catch(err) {
-      console.error(`Error posting question: ${ err }`);
+      // console.error(`Error posting question: ${ err }`);
 
       res.status(500).json({
         error: `Error posting question: ${ body }`
@@ -156,7 +127,7 @@ module.exports = {
       res.status(204).end();
 
     } catch(err) {
-      console.error(`Error upvoting question: ${ err }`);
+      // console.error(`Error upvoting question: ${ err }`);
 
       res.status(500).json({
         error: `Error upvoting question: ${ question_id }`
@@ -183,7 +154,7 @@ module.exports = {
       res.status(204).end();
 
     } catch(err) {
-      console.error(`Error reporting question: ${ err }`);
+      // console.error(`Error reporting question: ${ err }`);
 
       res.status(500).json({
         error: `Error reporting question: ${ question_id }`

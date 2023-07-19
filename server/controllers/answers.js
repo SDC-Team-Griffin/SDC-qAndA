@@ -8,15 +8,6 @@ module.exports = {
     const offset = (page - 1) * count;
 
     /*
-    const strQuery = `
-      SELECT * FROM answers
-      WHERE question_id = $1
-      ORDER BY id
-      LIMIT $2 OFFSET $3
-    `;
-    */
-
-    /*
       LEFT JOIN:
         > ALL rows from LEFT table included in data set
         > joins w/ column names (in condition) from RIGHT table
