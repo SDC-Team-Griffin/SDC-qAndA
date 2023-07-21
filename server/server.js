@@ -1,8 +1,10 @@
 require('dotenv').config();
-const { PORT, NODE_ENV } = process.env;
+const { PORT } = process.env;
 const express = require('express');
-const morgan = require('morgan');
 const path = require('path');
+const morgan = require('morgan');
+
+require('newrelic'); // monitors performance in production
 
 // ROUTES
 const routerQ = require('./routes/questions');
@@ -13,11 +15,10 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
 
-/* (serve loader.io verification file —> stress testing)
+// (serve loader.io verification file —> stress testing)
 app.use(
   express.static(path.join(__dirname, '../public'))
 );
-*/
 
 /*
 app.use(express.static(

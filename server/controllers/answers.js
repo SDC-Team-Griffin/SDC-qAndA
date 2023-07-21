@@ -71,12 +71,6 @@ module.exports = {
     }
   },
 
-  /* (errors):
-    > "SequelizeUniqueConstraintError: Validation error"
-    > "duplicate key value violates unique constraint 'answers_pkey'"
-
-    > NOTE: needed to sync table ID sequences (in schema)! **
-  */
   POST: async(req, res) => {
     const { question_id } = req.params;
     const { body, name, email, photos } = req.body;
