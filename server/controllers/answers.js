@@ -13,10 +13,10 @@ module.exports = {
         > joins w/ column names (in condition) from RIGHT table
         > sets val of every column from RIGHT table to NULL if unmatched
 
-      json_agg:
+      jsonb_agg:
         > aggregates multiple rows of data into single JSON array
 
-      json_build_object:
+      jsonb_build_object:
         > constructs JSON obj using key-val pairs
 
       COALESCE:
