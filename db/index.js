@@ -10,6 +10,7 @@ const pool = new Pool({
   port: DB_PORT
 });
 
+/*
 let shuttingDown = false;
 
 pool.on('connect', () => {
@@ -54,10 +55,12 @@ process.on('SIGINT', async() => {
 process.on('SIGTERM', async() => {
   await shutDown(0); // successful shutdown
 });
+*/
 
 (async() => {
   try {
     await pool.connect();
+    console.log(`User "${ USER }" connected to DB: ${ DB }`);
 
   } catch(err) {
     console.error(`Error connecting to DB: ${ err }`);
