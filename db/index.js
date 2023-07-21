@@ -34,7 +34,7 @@ const shutDown = async() => {
 
   console.log('Closing connection...');
   try {
-    await.pool.end();
+    await pool.end();
 
   } catch(err) {
     console.error(`Error closing connection pool: ${ err }`);
