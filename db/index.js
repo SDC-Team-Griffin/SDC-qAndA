@@ -10,37 +10,15 @@ const pool = new Pool({
   port: DB_PORT
 });
 
-pool.on('connect', () => {
-  console.log(`User "${ USER }" connected to DB: ${ DB }`);
-});
-
-const shutDown = async() => {
-  console.log('Closing connection...');
-  await pool.end();
-  console.log('Connections closed.');
-};
-
-process.on('SIGINT', async() => {
-  await shutDown();
-  process.exit(0);
-});
-
-process.on('SIGTERM', async() => {
-  await shutDown();
-  process.exit(0);
-});
-
-
-/*
 (async() => {
   try {
     await pool.connect();
-    console.log(`Connected to DB: ${ DB }`);
+    console.log(`User "${ USER }" connected to DB: ${ DB }`);
 
   } catch(err) {
     console.error(`Error connecting to DB: ${ err }`);
+    process.exit(1); // indicates error during startup
   }
 })();
-*/
 
 module.exports = pool;

@@ -1,5 +1,5 @@
 {
-  "name": "sdc-qanda",
+  "name": "Atelier Q&A",
   "version": "1.0.0",
   "description": "",
   "main": "./server/index.js",
