@@ -38,11 +38,10 @@ const shutDown = async() => {
 
   } catch(err) {
     console.error(`Error closing connection pool: ${ err }`);
-
     exitCode = 1; // set error exit code if issue closing pool
+
   }
   console.log('Connections closed.');
-
   process.exit(exitCode);
 };
 
@@ -62,7 +61,6 @@ process.on('SIGTERM', async() => {
 
   } catch(err) {
     console.error(`Error connecting to DB: ${ err }`);
-
     process.exit(1); // indicates error during startup
   }
 })();
