@@ -15,14 +15,9 @@ const app = express();
 app.use(morgan('dev'));
 app.use(express.json());
 
-// (serve loader.io verification file —> stress testing)
+/* (serve loader.io verification file —> stress testing)
 app.use(
   express.static(path.join(__dirname, '../public'))
-);
-
-/*
-app.use(express.static(
-  path.join(__dirname, '../../frontendcapstone/dist'))
 );
 */
 

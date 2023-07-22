@@ -5,13 +5,6 @@ module.exports = {
     const { product_id, page, count } = req.query;
     const offset = (page - 1) * count;
 
-    /*
-      WITH:
-        - allows for Common Table Expressions (CTE)
-          (transient tables for specific queries)
-
-        - SELECT —> breaks up query into simpler parts
-    */
     const query = `
       WITH question_answers AS (
         SELECT
