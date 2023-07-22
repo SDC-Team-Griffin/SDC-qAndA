@@ -4,7 +4,7 @@
   "description": "",
   "main": "./server/index.js",
   "scripts": {
-    "start": "nodemon -r newrelic server/server.js",
+    "start": "NEW_RELIC_APP_NAME=SDC-qanda NEW_RELIC_LICENSE_KEY=13ab582a5b84dea4584e76b7be2b0486FFFFNRAL nodemon -r newrelic server/server.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
