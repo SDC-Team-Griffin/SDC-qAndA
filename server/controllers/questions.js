@@ -5,13 +5,6 @@ module.exports = {
     const { product_id, page, count } = req.query;
     const offset = (page - 1) * count;
 
-    /*
-      WITH:
-        - allows for Common Table Expressions (CTE)
-          (transient tables for specific queries)
-
-        - SELECT —> breaks up query into simpler parts
-    */
     const query = `
       WITH question_answers AS (
         SELECT
@@ -93,12 +86,6 @@ module.exports = {
     }
   },
 
-  /* (errors):
-    > "SequelizeUniqueConstraintError: Validation error" **
-    > "duplicate key value violates unique constraint 'questions_pkey'"
-
-    > NOTE: needed to sync table ID sequences (in schema)! **
-  */
   POST: async(req, res) => {
     const { product_id, body, name, email } = req.body;
 

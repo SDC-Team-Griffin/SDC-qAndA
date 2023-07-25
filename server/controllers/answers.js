@@ -7,24 +7,6 @@ module.exports = {
 
     const offset = (page - 1) * count;
 
-    /*
-      LEFT JOIN:
-        > ALL rows from LEFT table included in data set
-        > joins w/ column names (in condition) from RIGHT table
-        > sets val of every column from RIGHT table to NULL if unmatched
-
-      jsonb_agg:
-        > aggregates multiple rows of data into single JSON array
-
-      jsonb_build_object:
-        > constructs JSON obj using key-val pairs
-
-      COALESCE:
-        > designates default val when result === null
-        (e.g. when answer has no photos —> empty array)
-
-        > takes multiple args —> returns 1st non-null
-    */
     const strQuery = `
       SELECT
         a.id AS answer_id,
@@ -71,12 +53,6 @@ module.exports = {
     }
   },
 
-  /* (errors):
-    > "SequelizeUniqueConstraintError: Validation error"
-    > "duplicate key value violates unique constraint 'answers_pkey'"
-
-    > NOTE: needed to sync table ID sequences (in schema)! **
-  */
   POST: async(req, res) => {
     const { question_id } = req.params;
     const { body, name, email, photos } = req.body;
